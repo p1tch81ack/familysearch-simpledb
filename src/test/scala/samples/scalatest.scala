@@ -26,8 +26,18 @@ One way to use ScalaTest is to help make JUnit or TestNG tests more
 clear and concise. Here's an example:
 */
 import scala.collection.mutable.Stack
-import org.scalatest.Assertions
+import org.scalatest.{FunSuite, Assertions}
 import org.junit.Test
+import org.familysearch.joetools.simpledb.{SimpleRow, SimpleHashMapTable}
+
+//@RunWith(classOf[JUnitRunner])
+class SimpleHashMapTableSuite extends FunSuite {
+  case class Foo(a: Int, b: String) extends SimpleRow
+  @Test def testTableCreation() {
+    val table = new SimpleHashMapTable[Foo]
+  }
+
+}
 
 class StackSuite extends Assertions {
 
