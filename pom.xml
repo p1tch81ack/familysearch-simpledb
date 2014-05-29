@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.familysearch.joetools.simpledb</groupId>
   <artifactId>familysearch-simpledb</artifactId>
-  <version>1.5</version>
+  <version>1.6-SNAPSHOT</version>
   <name>${project.artifactId}</name>
   <description>My wonderfull scala app</description>
   <inceptionYear>2010</inceptionYear>
@@ -38,7 +38,7 @@
         <url>https://github.com/p1tch81ack/familysearch-simpledb/src</url>
         <connection>scm:git:ssh://git@ssh.github.com:443/p1tch81ack/familysearch-simpledb.git</connection>
         <developerConnection>scm:git:ssh://git@ssh.github.com:443/p1tch81ack/familysearch-simpledb.git</developerConnection>
-        <tag>familysearch-simpledb-1.5</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <!--
