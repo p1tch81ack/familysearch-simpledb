@@ -1,10 +1,13 @@
 package org.familysearch.joetools.simpledb
 
-class SimpleHashMapTable[T<:SimpleRow] extends SimpleTable[T] {
+
+class SimpleHashMapTable[T/*<:SimpleRow*/](fieldMap: Map[String, (T)=>AnyRef]) extends SimpleTable[T](fieldMap) {
   private val rows = new java.util.HashMap[RowIndexEntry, java.util.List[T]]
 
+  def this () = this(null)
+
   def addRow(row: T) {
-    val indexEntry: RowIndexEntry = row.getRowIndexEntry
+    val indexEntry: RowIndexEntry = SimpleTable.getRowIndexEntry(row, fieldMap)
     var rowList: java.util.List[T] = rows.get(indexEntry)
     if (rowList == null) {
       rowList = new java.util.LinkedList[T]

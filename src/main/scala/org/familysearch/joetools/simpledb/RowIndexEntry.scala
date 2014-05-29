@@ -1,9 +1,9 @@
 package org.familysearch.joetools.simpledb
 
 class RowIndexEntry {
-  private val tagsAndValues = new java.util.TreeMap[String, String]
+  private val tagsAndValues = new java.util.TreeMap[String, AnyRef]
 
-  private def this(parent: RowIndexEntry, tag: String, value: String) {
+  private def this(parent: RowIndexEntry, tag: String, value: AnyRef) {
     this()
     tagsAndValues.putAll(parent.tagsAndValues)
     if (tagsAndValues.get(tag) != null) {
@@ -14,7 +14,7 @@ class RowIndexEntry {
     }
   }
 
-  def this(tag: String, value: String) {
+  def this(tag: String, value: AnyRef) {
     this(new RowIndexEntry, tag, value)
   }
 
@@ -24,7 +24,7 @@ class RowIndexEntry {
     tagsAndValues.remove(tag)
   }
 
-  def add(tag: String, value: String): RowIndexEntry = {
+  def add(tag: String, value: AnyRef): RowIndexEntry = {
     if (value != null) {
       new RowIndexEntry(this, tag, value)
     }
@@ -37,7 +37,7 @@ class RowIndexEntry {
     new RowIndexEntry(this, tag)
   }
 
-  def getSpecifierValue(tag: String): String = {
+  def getSpecifierValue(tag: String): AnyRef = {
     tagsAndValues.get(tag)
   }
 
