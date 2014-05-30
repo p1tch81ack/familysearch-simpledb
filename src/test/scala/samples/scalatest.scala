@@ -28,13 +28,24 @@ clear and concise. Here's an example:
 import scala.collection.mutable.Stack
 import org.scalatest.{FunSuite, Assertions}
 import org.junit.Test
-import org.familysearch.joetools.simpledb.{SimpleRow, SimpleHashMapTable}
+import org.familysearch.joetools.simpledb.{FieldMap, SimpleRow, SimpleHashMapTable}
 
 //@RunWith(classOf[JUnitRunner])
 class SimpleHashMapTableSuite extends FunSuite {
-  case class Foo(a: Int, b: String) extends SimpleRow
+  case class Foo(a: java.lang.Integer, b: String) extends SimpleRow
+  object FooFieldMap extends FieldMap[Foo] {
+    override def get(theInstance: Foo, fieldName: String): AnyRef = {
+      fieldName match {
+        case "a" => theInstance.a
+        case "b" => theInstance.b
+        case _ => null
+      }
+    }
+
+    override def fieldNames: List[String] = super.fieldNames
+  }
   @Test def testTableCreation() {
-    val table = new SimpleHashMapTable[Foo]
+    val table = new SimpleHashMapTable[Foo](FooFieldMap)
   }
 
 }
