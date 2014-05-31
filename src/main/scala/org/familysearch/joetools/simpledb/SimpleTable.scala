@@ -1,22 +1,8 @@
 package org.familysearch.joetools.simpledb
 
+import scala.collection.immutable.TreeSet
+
 object SimpleTable {
-  def getRowIndexEntry[T](instance: T, fieldMap: FieldMap[T]): RowIndexEntry = {
-    var rowIndexEntry = new RowIndexEntry
-    for(fieldName <- fieldMap.fieldNames){
-       rowIndexEntry = rowIndexEntry.add(fieldName, fieldMap.get(instance, fieldName))
-    }
-    rowIndexEntry
-  }
-
-  def getRowIndexEntry[T](instance: T, fieldMap: Map[String, (T)=>AnyRef]): RowIndexEntry = {
-    var rowIndexEntry = new RowIndexEntry
-    for(fieldName <- fieldMap.keys){
-      rowIndexEntry = rowIndexEntry.add(fieldName, fieldMap(fieldName)(instance))
-    }
-    rowIndexEntry
-  }
-
   def getFieldMap[T](fieldMapInstance: FieldMap[T]): Map[String, (T)=>AnyRef] = {
     (for(fieldName <-fieldMapInstance.fieldNames) yield (fieldName, (instance:T)=>{fieldMapInstance.get(instance, fieldName)})).toMap
   }
@@ -27,13 +13,13 @@ abstract class SimpleTable[T](protected val fieldMap: Map[String, (T)=>AnyRef]) 
 
   def getMatchingRows(matchSpecifier: RowSpecifier): java.util.List[T]
 
-  def getMapOfMatchingRows(matchSpecifier: RowSpecifier): java.util.Map[RowIndexEntry, java.util.List[T]]
+  def getMapOfMatchingRows(matchSpecifier: RowSpecifier): java.util.Map[Map[String, AnyRef], java.util.List[T]]
 
   def getSpecifierValuesForMatchingRows(rowSpecifier: RowSpecifier, specifierTag: String): java.util.Set[AnyRef] = {
     val specifierValues: java.util.Set[AnyRef] = new java.util.TreeSet[AnyRef]
     import scala.collection.JavaConversions._
     for (rowIndexEntry <- getMapOfMatchingRows(rowSpecifier).keySet) {
-      val specifierValue: AnyRef = rowIndexEntry.getSpecifierValue(specifierTag)
+      val specifierValue: AnyRef = rowIndexEntry(specifierTag)
       if (!(specifierValue eq null)) {
         specifierValues.add(specifierValue)
       }
@@ -43,7 +29,7 @@ abstract class SimpleTable[T](protected val fieldMap: Map[String, (T)=>AnyRef]) 
 
   def getMappedListOfValuesMatchingSpecifierGrupedByConcatinatedUniqueValues(rowSpecifier: RowSpecifier, function: Function[T, AnyRef], separator: String): java.util.Map[String, _ <: java.util.List[String]] = {
     val out: java.util.Map[String, java.util.LinkedList[String]] = new java.util.TreeMap[String, java.util.LinkedList[String]]
-    val mappedRows: java.util.Map[RowIndexEntry, java.util.List[T]] = getMapOfMatchingRows(rowSpecifier)
+    val mappedRows: java.util.Map[Map[String, AnyRef], java.util.List[T]] = getMapOfMatchingRows(rowSpecifier)
     import scala.collection.JavaConversions._
     for (rowIndexEntry <- mappedRows.keySet) {
       val key: String = concatinateUnspecifiedRowSpecifierValues(rowSpecifier, rowIndexEntry, separator)
@@ -63,15 +49,16 @@ abstract class SimpleTable[T](protected val fieldMap: Map[String, (T)=>AnyRef]) 
     out
   }
 
-  private def concatinateUnspecifiedRowSpecifierValues(rowSpecifier: RowSpecifier, rowIndexEntry: RowIndexEntry, separator: String): String = {
+  private def concatinateUnspecifiedRowSpecifierValues(rowSpecifier: RowSpecifier, rowIndexEntry: Map[String, AnyRef], separator: String): String = {
     var key: String = ""
-    import scala.collection.JavaConversions._
-    for (tag <- rowIndexEntry.getSpecifierTags) {
-      if (rowSpecifier.matches(rowIndexEntry.remove(tag))) {
+//    import scala.collection.JavaConversions._
+    for (tag <- new TreeSet[String] & rowIndexEntry.keySet) {
+      val indexEntryWithTagRemoved = rowIndexEntry - tag
+      if (rowSpecifier.matches(indexEntryWithTagRemoved)) {
         if (key.length > 0) {
           key += separator
         }
-        key += rowIndexEntry.getSpecifierValue(tag)
+        key += rowIndexEntry(tag)
       }
     }
     key

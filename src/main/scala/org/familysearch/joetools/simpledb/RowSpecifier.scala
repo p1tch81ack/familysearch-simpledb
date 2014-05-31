@@ -39,7 +39,7 @@ class RowSpecifier(private val test: Test) {
     andNot(new HasTagValue(tag, value))
   }
 
-  def matches(target: RowIndexEntry): Boolean = {
+  def matches(target: Map[String, AnyRef]): Boolean = {
     test.evaluate(target)
   }
 }

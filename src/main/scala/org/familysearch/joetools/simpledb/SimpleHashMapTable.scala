@@ -2,16 +2,23 @@ package org.familysearch.joetools.simpledb
 
 
 class SimpleHashMapTable[T](fieldMap: Map[String, (T)=>AnyRef]) extends SimpleTable[T](fieldMap) {
-  private val rows = new java.util.HashMap[RowIndexEntry, java.util.List[T]]
+  private val rows = new java.util.HashMap[Map[String, AnyRef], java.util.List[T]]
 
   def this (fieldMap: FieldMap[T]) = this(SimpleTable.getFieldMap(fieldMap))
 
   def addRow(row: T) {
-    val indexEntry: RowIndexEntry = SimpleTable.getRowIndexEntry(row, fieldMap)
-    var rowList: java.util.List[T] = rows.get(indexEntry)
+    var rowIndexEntry = Map[String, AnyRef]()
+    for(fieldName <- fieldMap.keys){
+      val value = fieldMap(fieldName)(row)
+      if(value!=null){
+        rowIndexEntry = rowIndexEntry + (fieldName -> value)
+      }
+    }
+    rowIndexEntry
+    var rowList: java.util.List[T] = rows.get(rowIndexEntry)
     if (rowList == null) {
       rowList = new java.util.LinkedList[T]
-      rows.put(indexEntry, rowList)
+      rows.put(rowIndexEntry, rowList)
     }
     rowList.add(row)
   }
@@ -27,8 +34,8 @@ class SimpleHashMapTable[T](fieldMap: Map[String, (T)=>AnyRef]) extends SimpleTa
     matchingRows
   }
 
-  def getMapOfMatchingRows(matchSpecifier: RowSpecifier): java.util.Map[RowIndexEntry, java.util.List[T]] = {
-    val matchingRowMap: java.util.Map[RowIndexEntry, java.util.List[T]] = new java.util.HashMap[RowIndexEntry, java.util.List[T]]
+  def getMapOfMatchingRows(matchSpecifier: RowSpecifier): java.util.Map[Map[String, AnyRef], java.util.List[T]] = {
+    val matchingRowMap: java.util.Map[Map[String, AnyRef], java.util.List[T]] = new java.util.HashMap[Map[String, AnyRef], java.util.List[T]]
     import scala.collection.JavaConversions._
     for (rowIndexEntry <- rows.keySet) {
       if ((matchSpecifier eq null) || matchSpecifier.matches(rowIndexEntry)) {
