@@ -28,11 +28,11 @@ clear and concise. Here's an example:
 import scala.collection.mutable.Stack
 import org.scalatest.{FunSuite, Assertions}
 import org.junit.Test
-import org.familysearch.joetools.simpledb.{FieldMap, SimpleRow, SimpleHashMapTable}
+import org.familysearch.joetools.simpledb.{FieldMap, SimpleHashMapTable}
 
 //@RunWith(classOf[JUnitRunner])
 class SimpleHashMapTableSuite extends FunSuite {
-  case class Foo(a: java.lang.Integer, b: String) extends SimpleRow
+  case class Foo(a: java.lang.Integer, b: String)
   object FooFieldMap extends FieldMap[Foo] {
     override def get(theInstance: Foo, fieldName: String): AnyRef = {
       fieldName match {

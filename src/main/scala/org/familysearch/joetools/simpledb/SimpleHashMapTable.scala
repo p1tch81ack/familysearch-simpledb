@@ -1,7 +1,7 @@
 package org.familysearch.joetools.simpledb
 
 
-class SimpleHashMapTable[T/*<:SimpleRow*/](fieldMap: Map[String, (T)=>AnyRef]) extends SimpleTable[T](fieldMap) {
+class SimpleHashMapTable[T](fieldMap: Map[String, (T)=>AnyRef]) extends SimpleTable[T](fieldMap) {
   private val rows = new java.util.HashMap[RowIndexEntry, java.util.List[T]]
 
   def this (fieldMap: FieldMap[T]) = this(SimpleTable.getFieldMap(fieldMap))
