@@ -20,7 +20,7 @@ abstract class SimpleTable[T](protected val fieldMap: Map[String, (T)=>AnyRef]) 
     import scala.collection.JavaConversions._
     for (rowIndexEntry <- getMapOfMatchingRows(rowSpecifier).keySet) {
       if(rowIndexEntry.contains(specifierTag)){
-      val specifierValue: AnyRef = rowIndexEntry(specifierTag)
+        val specifierValue: AnyRef = rowIndexEntry(specifierTag)
         specifierValues.add(specifierValue)
       }
     }
