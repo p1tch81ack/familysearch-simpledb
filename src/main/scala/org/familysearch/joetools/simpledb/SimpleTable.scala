@@ -19,8 +19,8 @@ abstract class SimpleTable[T](protected val fieldMap: Map[String, (T)=>AnyRef]) 
     val specifierValues: java.util.Set[AnyRef] = new java.util.TreeSet[AnyRef]
     import scala.collection.JavaConversions._
     for (rowIndexEntry <- getMapOfMatchingRows(rowSpecifier).keySet) {
+      if(rowIndexEntry.contains(specifierTag)){
       val specifierValue: AnyRef = rowIndexEntry(specifierTag)
-      if (!(specifierValue eq null)) {
         specifierValues.add(specifierValue)
       }
     }
