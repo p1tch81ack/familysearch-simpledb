@@ -51,19 +51,22 @@ abstract class SimpleTable[T](protected val fieldMap: Map[String, (T)=>AnyRef]) 
   private def concatinateUnspecifiedRowSpecifierValues(rowSpecifier: RowSpecifier,
                                                        rowIndexEntry: Map[String, AnyRef],
                                                        separator: String): String = {
-    var key: String = ""
+    var out: String = ""
     val keySet: collection.Set[String] = rowIndexEntry.keySet
-    val sortedKeyset: TreeSet[String] = new TreeSet[String] & keySet
+    var sortedKeyset = new scala.collection.immutable.TreeSet[String]
+    for(key<-keySet){
+      sortedKeyset += key
+    }
     for (tag <- sortedKeyset) {
         val indexEntryWithTagRemoved = rowIndexEntry - tag
         if (rowSpecifier.matches(indexEntryWithTagRemoved)) {
-          if (key.length > 0) {
-            key = key + separator
+          if (out.length > 0) {
+            out = out + separator
           }
-          key = key + rowIndexEntry(tag)
+          out = out + rowIndexEntry(tag)
         }
       }
-      key
+      out
     }
 
   def getAverageValueForMatchingRows(rowSpecifier: RowSpecifier, function: Function[T, java.lang.Double]): Double = {
