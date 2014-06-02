@@ -2,7 +2,7 @@ package org.familysearch.joetools.simpledb
 
 
 class SimpleHashMapTable[T](fieldMap: Map[String, (T)=>AnyRef]) extends SimpleTable[T](fieldMap) {
-  private val rows = new java.util.HashMap[Map[String, AnyRef], java.util.List[T]]
+  private val rows = new scala.collection.mutable.HashMap[Map[String, AnyRef], List[T]]
 
   def this (fieldMap: FieldMap[T]) = this(SimpleTable.getFieldMap(fieldMap))
 
@@ -15,31 +15,30 @@ class SimpleHashMapTable[T](fieldMap: Map[String, (T)=>AnyRef]) extends SimpleTa
       }
     }
     rowIndexEntry
-    var rowList: java.util.List[T] = rows.get(rowIndexEntry)
-    if (rowList == null) {
-      rowList = new java.util.LinkedList[T]
-      rows.put(rowIndexEntry, rowList)
+    var rowList: List[T] = List[T] ()
+    if(rows.contains(rowIndexEntry)){
+      rowList = rows(rowIndexEntry)
     }
-    rowList.add(row)
+    rows.put(rowIndexEntry, rowList.::(row))
   }
 
-  def getMatchingRows(matchSpecifier: RowSpecifier): java.util.List[T] = {
-    val matchingRows: java.util.List[T] = new java.util.LinkedList[T]
-    import scala.collection.JavaConversions._
+  def getMatchingRows(matchSpecifier: RowSpecifier): List[T] = {
+    var matchingRows = List[T]()
     for (rowIndexEntry <- rows.keySet) {
       if (matchSpecifier.matches(rowIndexEntry)) {
-        matchingRows.addAll(rows.get(rowIndexEntry))
+        for(row <- rows(rowIndexEntry)){
+          matchingRows = matchingRows.::( row )
+        }
       }
     }
     matchingRows
   }
 
-  def getMapOfMatchingRows(matchSpecifier: RowSpecifier): java.util.Map[Map[String, AnyRef], java.util.List[T]] = {
-    val matchingRowMap: java.util.Map[Map[String, AnyRef], java.util.List[T]] = new java.util.HashMap[Map[String, AnyRef], java.util.List[T]]
-    import scala.collection.JavaConversions._
+  def getMapOfMatchingRows(matchSpecifier: RowSpecifier): Map[Map[String, AnyRef], List[T]] = {
+    var matchingRowMap: Map[Map[String, AnyRef], List[T]] = Map[Map[String, AnyRef], List[T]]()
     for (rowIndexEntry <- rows.keySet) {
       if ((matchSpecifier eq null) || matchSpecifier.matches(rowIndexEntry)) {
-        matchingRowMap.put(rowIndexEntry, rows.get(rowIndexEntry))
+        matchingRowMap = matchingRowMap + (rowIndexEntry -> rows.get(rowIndexEntry).get)
       }
     }
     matchingRowMap
