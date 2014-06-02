@@ -1,6 +1,7 @@
 package org.familysearch.joetools.simpledb
 
 import scala.collection.immutable.TreeSet
+import scala.collection
 
 object SimpleTable {
   def getFieldMap[T](fieldMapInstance: FieldMap[T]): Map[String, (T)=>AnyRef] = {
@@ -50,8 +51,10 @@ abstract class SimpleTable[T](protected val fieldMap: Map[String, (T)=>AnyRef]) 
   private def concatinateUnspecifiedRowSpecifierValues(rowSpecifier: RowSpecifier,
                                                        rowIndexEntry: Map[String, AnyRef],
                                                        separator: String): String = {
-      var key: String = ""
-      for (tag <- new TreeSet[String] & rowIndexEntry.keySet) {
+    var key: String = ""
+    val keySet: collection.Set[String] = rowIndexEntry.keySet
+    val sortedKeyset: TreeSet[String] = new TreeSet[String] & keySet
+    for (tag <- sortedKeyset) {
         val indexEntryWithTagRemoved = rowIndexEntry - tag
         if (rowSpecifier.matches(indexEntryWithTagRemoved)) {
           if (key.length > 0) {
