@@ -55,9 +55,9 @@ abstract class SimpleTable[T](protected val fieldMap: Map[String, (T)=>AnyRef]) 
         val indexEntryWithTagRemoved = rowIndexEntry - tag
         if (rowSpecifier.matches(indexEntryWithTagRemoved)) {
           if (key.length > 0) {
-            key += separator
+            key = key + separator
           }
-          key += rowIndexEntry(tag)
+          key = key + rowIndexEntry(tag)
         }
       }
       key
