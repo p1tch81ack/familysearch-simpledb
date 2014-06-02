@@ -36,11 +36,10 @@ abstract class SimpleTable[T](protected val fieldMap: Map[String, (T)=>AnyRef]) 
         if (value != null) {
           var lines = List[String]()
           if(out.contains(key)) {
-            var lines = out(key)
-            lines = List[String]()
-            out = out + (key -> lines)
+            lines = out(key)
           }
           lines = lines.:: (value.toString)
+          out = out + (key -> lines)
         }
       }
     }
