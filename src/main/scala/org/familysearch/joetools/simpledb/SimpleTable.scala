@@ -1,5 +1,7 @@
 package org.familysearch.joetools.simpledb
 
+import scala.collection.immutable.TreeSet
+
 object SimpleTable {
   def getFieldMap[T](fieldMapInstance: FieldMap[T]): Map[String, (T)=>AnyRef] = {
     (for(fieldName <-fieldMapInstance.fieldNames) yield (fieldName, (instance:T)=>{fieldMapInstance.get(instance, fieldName)})).toMap
@@ -23,47 +25,44 @@ abstract class SimpleTable[T](protected val fieldMap: Map[String, (T)=>AnyRef]) 
     }
     specifierValues
   }
-/*
-  def getMappedListOfValuesMatchingSpecifierGroupedByConcatinatedUniqueValues(
-                                                                              rowSpecifier: RowSpecifier,
-                                                                              function: Function[T, AnyRef],
-                                                                              separator: String)
-                                                                              : Map[String, _ <: List[String]] = {
-    val out = scala.collection.immutable.TreeMap[String, List[String]]()
+
+  def getMappedListOfValuesMatchingSpecifierGrupedByConcatinatedUniqueValues(rowSpecifier: RowSpecifier, function: Function[T, AnyRef], separator: String): Map[String, _ <: List[String]] = {
+    var out = Map[String, List[String]]()
     val mappedRows = getMapOfMatchingRows(rowSpecifier)
     for (rowIndexEntry <- mappedRows.keySet) {
       val key: String = concatinateUnspecifiedRowSpecifierValues(rowSpecifier, rowIndexEntry, separator)
-      import scala.collection.JavaConversions._
-      for (row <- mappedRows.get(rowIndexEntry)) {
+      for (row <- mappedRows(rowIndexEntry)) {
         val value: AnyRef = function.get(row)
         if (value != null) {
-          if(out.contains(key)){
-            var lines: List[String] = out(key)
-            lines = new java.util.LinkedList[String]
-            out.put(key, lines)
+          var lines = List[String]()
+          if(out.contains(key)) {
+            var lines = out(key)
+            lines = List[String]()
+            out = out + (key -> lines)
           }
-          lines.add(value.toString)
+          lines = lines.:: (value.toString)
         }
       }
     }
     out
   }
 
-  private def concatinateUnspecifiedRowSpecifierValues(rowSpecifier: RowSpecifier, rowIndexEntry: Map[String, AnyRef], separator: String): String = {
-    var key: String = ""
-//    import scala.collection.JavaConversions._
-    for (tag <- new TreeSet[String] & rowIndexEntry.keySet) {
-      val indexEntryWithTagRemoved = rowIndexEntry - tag
-      if (rowSpecifier.matches(indexEntryWithTagRemoved)) {
-        if (key.length > 0) {
-          key += separator
+
+  private def concatinateUnspecifiedRowSpecifierValues(rowSpecifier: RowSpecifier,
+                                                       rowIndexEntry: Map[String, AnyRef],
+                                                       separator: String): String = {
+      var key: String = ""
+      for (tag <- new TreeSet[String] & rowIndexEntry.keySet) {
+        val indexEntryWithTagRemoved = rowIndexEntry - tag
+        if (rowSpecifier.matches(indexEntryWithTagRemoved)) {
+          if (key.length > 0) {
+            key += separator
+          }
+          key += rowIndexEntry(tag)
         }
-        key += rowIndexEntry(tag)
       }
+      key
     }
-    key
-  }
-*/
 
   def getAverageValueForMatchingRows(rowSpecifier: RowSpecifier, function: Function[T, java.lang.Double]): Double = {
     var total: Double = 0.0
