@@ -2,18 +2,37 @@ package org.familysearch.joetools.simpledb
 
 import scala.collection
 
-object SimpleTable {
-  def getFieldMap[T](fieldMapInstance: FieldMap[T]): Map[String, (T)=>AnyRef] = {
-    (for(fieldName <-fieldMapInstance.fieldNames) yield (fieldName, (instance:T)=>{fieldMapInstance.get(instance, fieldName)})).toMap
+class SimpleTable[T](protected val tableSource: BaseTableSource[T]) {
+  def this(baseIterable: Iterable[T], fieldMap: Map[String, (T)=>_<:AnyRef]) = this(new MappedIterableBaseTableSource[T](baseIterable, fieldMap))
+  def this(baseIterable: java.lang.Iterable[T], fieldMap: Map[String, (T)=>_<:AnyRef]) = this(new MappedJavaIterableBaseTableSource[T](baseIterable, fieldMap))
+  def this(baseIterable: java.lang.Iterable[T], fieldMap: FieldMap[T]) = this(new MappedJavaIterableBaseTableSource[T](baseIterable, BaseTableSource.getFieldMap(fieldMap)))
+
+  def getMatchingRows(matchSpecifier: RowSpecifier): List[T] = {
+    var matchingRows = List[T]()
+    for ((rowIndexEntry, instance) <- tableSource) {
+      if (matchSpecifier.matches(rowIndexEntry)) {
+        matchingRows ::= instance
+      }
+    }
+    matchingRows
   }
 
-}
+  def getMapOfMatchingRows(matchSpecifier: RowSpecifier): Map[Map[String, AnyRef], List[T]] = {
+    var matchingRowMap: Map[Map[String, AnyRef], List[T]] = Map[Map[String, AnyRef], List[T]]()
+    for ((rowIndexEntry, instance) <- tableSource) {
+      if ((matchSpecifier eq null) || matchSpecifier.matches(rowIndexEntry)) {
+        var instanceList = List[T]()
+        if(matchingRowMap.contains(rowIndexEntry)){
+          instanceList = matchingRowMap(rowIndexEntry)
+        }
+        instanceList ::= instance
+        matchingRowMap += (rowIndexEntry->instanceList)
+      }
+    }
+    matchingRowMap
+  }
 
-abstract class SimpleTable[T](protected val tableSource: BaseTableSource[T]) {
 
-  def getMatchingRows(matchSpecifier: RowSpecifier): List[T]
-
-  def getMapOfMatchingRows(matchSpecifier: RowSpecifier): Map[Map[String, AnyRef], List[T]]
 
   def getSpecifierValuesForMatchingRows(rowSpecifier: RowSpecifier, specifierTag: String): Set[AnyRef] = {
     var specifierValues = Set[AnyRef]()

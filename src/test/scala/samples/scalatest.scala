@@ -28,12 +28,12 @@ clear and concise. Here's an example:
 import scala.collection.mutable.Stack
 import org.scalatest.{FunSuite, Assertions}
 import org.junit.Test
-import org.familysearch.joetools.simpledb.{SimpleTable, MappedIterableBaseTableSource, FieldMap, SimpleHashMapTable}
+import org.familysearch.joetools.simpledb._
 
 //@RunWith(classOf[JUnitRunner])
 class SimpleHashMapTableSuite extends FunSuite {
   case class Foo(a: java.lang.Integer, b: String)
-  object FooFieldMap extends FieldMap[Foo] {
+  object JavaFooFieldMap extends FieldMap[Foo] {
     override def get(theInstance: Foo, fieldName: String): AnyRef = {
       fieldName match {
         case "a" => theInstance.a
@@ -41,13 +41,18 @@ class SimpleHashMapTableSuite extends FunSuite {
         case _ => null
       }
     }
-
     override def fieldNames: List[String] = super.fieldNames
   }
+
+  val fieldMap = Map[String, (Foo)=>_<:AnyRef]( "a" -> ((i:Foo)=>{i.a}), "b" -> ( (i:Foo)=>{i.b}))
   @Test def testTableCreation() {
     val fooList = List[Foo]()
-    val fooBaseTable = new MappedIterableBaseTableSource[Foo](fooList, SimpleTable.getFieldMap(FooFieldMap))
-    val table = new SimpleHashMapTable[Foo](fooBaseTable)
+    val table = new SimpleTable[Foo](fooList, fieldMap)
+  }
+
+  @Test def testTableCreationFromJavaCollection() {
+    val fooList = new java.util.LinkedList[Foo]()
+    val table = new SimpleTable[Foo](fooList, JavaFooFieldMap)
   }
 
 }

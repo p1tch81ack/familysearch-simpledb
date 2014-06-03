@@ -1,6 +1,6 @@
 package org.familysearch.joetools.simpledb
 
-class MappedIterableBaseTableSourceIterator[T](private val baseIterator: Iterator[T], fieldMap: Map[String, (T)=>AnyRef]) extends Iterator[(Map[String, AnyRef], T)]{
+class MappedIterableBaseTableSourceIterator[T](private val baseIterator: Iterator[T], fieldMap: Map[String, (T)=>_<:AnyRef]) extends Iterator[(Map[String, AnyRef], T)]{
   def hasNext: Boolean = baseIterator.hasNext
 
   def next(): (Map[String, AnyRef], T) = {
@@ -16,6 +16,6 @@ class MappedIterableBaseTableSourceIterator[T](private val baseIterator: Iterato
   }
 }
 
-class MappedIterableBaseTableSource[T](private val baseIterable: Iterable[T], fieldMap: Map[String, (T)=>AnyRef]) extends BaseTableSource[T] {
+class MappedIterableBaseTableSource[T](private val baseIterable: Iterable[T], fieldMap: Map[String, (T)=>_<:AnyRef]) extends BaseTableSource[T] {
   def iterator: Iterator[(Map[String, AnyRef], T)] = new MappedIterableBaseTableSourceIterator[T](baseIterable.iterator, fieldMap)
 }
