@@ -1,5 +1,7 @@
 package org.familysearch.joetools.simpledb
 
+import org.familysearch.joetools.simpledb.SimpleTable.BaseTableSource
+
 class MappedIterableBaseTableSourceIterator[T](private val baseIterator: Iterator[T], fieldMap: Map[String, (T)=>_<:AnyRef]) extends Iterator[(Map[String, AnyRef], T)]{
   def hasNext: Boolean = baseIterator.hasNext
 
