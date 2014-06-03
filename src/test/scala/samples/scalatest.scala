@@ -28,7 +28,7 @@ clear and concise. Here's an example:
 import scala.collection.mutable.Stack
 import org.scalatest.{FunSuite, Assertions}
 import org.junit.Test
-import org.familysearch.joetools.simpledb.{FieldMap, SimpleHashMapTable}
+import org.familysearch.joetools.simpledb.{SimpleTable, MappedIterableBaseTableSource, FieldMap, SimpleHashMapTable}
 
 //@RunWith(classOf[JUnitRunner])
 class SimpleHashMapTableSuite extends FunSuite {
@@ -45,7 +45,9 @@ class SimpleHashMapTableSuite extends FunSuite {
     override def fieldNames: List[String] = super.fieldNames
   }
   @Test def testTableCreation() {
-    val table = new SimpleHashMapTable[Foo](FooFieldMap)
+    val fooList = List[Foo]()
+    val fooBaseTable = new MappedIterableBaseTableSource[Foo](fooList, SimpleTable.getFieldMap(FooFieldMap))
+    val table = new SimpleHashMapTable[Foo](fooBaseTable)
   }
 
 }

@@ -1,6 +1,5 @@
 package org.familysearch.joetools.simpledb
 
-import scala.collection.immutable.TreeSet
 import scala.collection
 
 object SimpleTable {
@@ -10,7 +9,7 @@ object SimpleTable {
 
 }
 
-abstract class SimpleTable[T](protected val fieldMap: Map[String, (T)=>AnyRef]) {
+abstract class SimpleTable[T](protected val tableSource: BaseTableSource[T]) {
 
   def getMatchingRows(matchSpecifier: RowSpecifier): List[T]
 
