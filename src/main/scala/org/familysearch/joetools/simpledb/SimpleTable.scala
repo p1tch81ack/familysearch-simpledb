@@ -1,21 +1,14 @@
 package org.familysearch.joetools.simpledb
 
-import scala.collection
 import org.familysearch.joetools.simpledb.SimpleTable.BaseTableSource
 
 object SimpleTable {
   type BaseTableSource[T] =  Iterable[Tuple2[Map[String, AnyRef], T]]
-
-  def getFieldMap[T](fieldMapInstance: FieldMap[T]): Map[String, (T)=>AnyRef] = {
-    (for(fieldName <-fieldMapInstance.fieldNames) yield (fieldName, (instance:T)=>{fieldMapInstance.get(instance, fieldName)})).toMap
-  }
 }
 
 class SimpleTable[T](protected val tableSource: BaseTableSource[T]) {
-
-  def this(baseIterable: Iterable[T], fieldMap: Map[String, (T)=>_<:AnyRef]) = this(new MappedIterableBaseTableSource[T](baseIterable, fieldMap).toMap)
-  def this(baseIterable: java.lang.Iterable[T], fieldMap: Map[String, (T)=>_<:AnyRef]) = this( new MappedJavaIterableBaseTableSource[T](baseIterable, fieldMap).toMap)
-  def this(baseIterable: java.lang.Iterable[T], fieldMap: FieldMap[T]) = this(new MappedJavaIterableBaseTableSource[T](baseIterable, SimpleTable.getFieldMap(fieldMap)).toMap)
+  def this(baseIterable: Iterable[T], companion: Companion[T]) = this(new MappedIterableBaseTableSource[T](baseIterable, companion).toMap)
+  def this(baseIterable: java.lang.Iterable[T], companion: Companion[T]) = this(new MappedJavaIterableBaseTableSource[T](baseIterable, companion).toMap)
 
   def getMatchingRows(matchSpecifier: RowSpecifier): List[T] = {
     var matchingRows = List[T]()
