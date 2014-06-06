@@ -53,17 +53,17 @@ class SimpleTable[T](protected val tableSource: BaseTableSource[T]) {
     val mappedRows = getMapOfMatchingRows(rowSpecifier)
     for (rowIndexEntry <- mappedRows.keySet) {
       val key: String = concatinateUnspecifiedRowSpecifierValues(rowSpecifier, rowIndexEntry, separator)
+      var lines = List[String]()
+      if(out.contains(key)) {
+        lines = out(key)
+      }
       for (row <- mappedRows(rowIndexEntry)) {
         val value: AnyRef = function.get(row)
         if (value != null) {
-          var lines = List[String]()
-          if(out.contains(key)) {
-            lines = out(key)
-          }
           lines = lines.:: (value.toString)
-          out = out + (key -> lines)
         }
       }
+      out = out + (key -> lines)
     }
     out
   }
@@ -79,16 +79,16 @@ class SimpleTable[T](protected val tableSource: BaseTableSource[T]) {
       sortedKeyset += key
     }
     for (tag <- sortedKeyset) {
-        val indexEntryWithTagRemoved = rowIndexEntry - tag
-        if (rowSpecifier.matches(indexEntryWithTagRemoved)) {
-          if (out.length > 0) {
-            out = out + separator
-          }
-          out = out + rowIndexEntry(tag)
+      val indexEntryWithTagRemoved = rowIndexEntry - tag
+      if (rowSpecifier.matches(indexEntryWithTagRemoved)) {
+        if (out.length > 0) {
+          out = out + separator
         }
+        out = out + rowIndexEntry(tag)
       }
-      out
     }
+    out
+  }
 
   def getAverageValueForMatchingRows(rowSpecifier: RowSpecifier, function: Function[T, java.lang.Double]): Double = {
     var total: Double = 0.0
