@@ -48,7 +48,8 @@ class SimpleTable[T](protected val tableSource: BaseTableSource[T]) {
     specifierValues
   }
 
-  def getMappedListOfValuesMatchingSpecifierGrupedByConcatinatedUniqueValues(rowSpecifier: RowSpecifier, function: Function[T, AnyRef], separator: String): Map[String, _ <: List[String]] = {
+  def getMappedListOfValuesMatchingSpecifierGrupedByConcatinatedUniqueValues(tagsAndValues: Map[String, AnyRef], function: Function[T, AnyRef], separator: String): Map[String, _ <: List[String]] = {
+    val rowSpecifier = RowSpecifier(tagsAndValues)
     var out = Map[String, List[String]]()
     val mappedRows = getMapOfMatchingRows(rowSpecifier)
     for (rowIndexEntry <- mappedRows.keySet) {
