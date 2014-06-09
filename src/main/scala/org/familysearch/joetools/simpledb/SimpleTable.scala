@@ -71,19 +71,18 @@ class SimpleTable[T](protected val tableSource: BaseTableSource[T]) {
   }
 
 
-  private def getSortedMapOfKeysAndValuesNotSpecifiedInTheQuery(tagsAndValues: Iterable[(String, AnyRef)],
+  private def getSortedMapOfKeysAndValuesNotSpecifiedInTheQuery(tagsAndValues: Map[String, AnyRef],
                                                        rowIndexEntry: Map[String, AnyRef]): SortedMap[String, AnyRef] = {
     var filteredIndexEntry = scala.collection.SortedMap[String, AnyRef]()
 
-    for((tag, value) <- tagsAndValues){
-      val indexEntryValue = rowIndexEntry.get(tag)
-      if(indexEntryValue == None){
-        println("Warning: index entry should have had tag " + tag + " but it wasn't there...")
-      } else {
-        if(indexEntryValue.get != value){
-          println("Warning: index entry should have had value (" + value + ") for tag " + tag + " but instead it had value (" + indexEntryValue.get + ")...")
-        }
+    for((tag, value) <- rowIndexEntry){
+      if(!tagsAndValues.contains(tag)){
         filteredIndexEntry = filteredIndexEntry.+((tag, value))
+      } else {
+        val tagsAndValuesValue = tagsAndValues(tag)
+        if(tagsAndValuesValue != value){
+          println("Warning: index entry should have had value (" + tagsAndValuesValue + ") for tag " + tag + " but instead it had value (" + value + ")...")
+        }
       }
     }
     filteredIndexEntry
