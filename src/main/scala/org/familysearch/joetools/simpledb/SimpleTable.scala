@@ -1,6 +1,7 @@
 package org.familysearch.joetools.simpledb
 
 import org.familysearch.joetools.simpledb.SimpleTable.BaseTableSource
+import scala.collection.SortedMap
 
 object SimpleTable {
   type BaseTableSource[T] =  Iterable[Tuple2[Map[String, AnyRef], T]]
@@ -48,18 +49,18 @@ class SimpleTable[T](protected val tableSource: BaseTableSource[T]) {
     specifierValues
   }
 
-  def getMappedListOfValuesMatchingSpecifierGrupedByConcatinatedUniqueValues(tagsAndValues: Map[String, AnyRef], function: Function[T, AnyRef], separator: String): Map[String, _ <: List[String]] = {
+  def getMappedListOfValuesMatchingSpecifierGroupedByConcatinatedUniqueValues(tagsAndValues: Map[String, AnyRef], function: Function[T, String], separator: String): Map[String, _ <: List[String]] = {
     val rowSpecifier = RowSpecifier(tagsAndValues)
+    val mappedRows: Map[Map[String, AnyRef], List[T]] = getMapOfMatchingRows(rowSpecifier)
     var out = Map[String, List[String]]()
-    val mappedRows = getMapOfMatchingRows(rowSpecifier)
-    for (rowIndexEntry <- mappedRows.keySet) {
-      val key: String = concatinateUnspecifiedRowSpecifierValues(rowSpecifier, rowIndexEntry, separator)
+    for ((rowIndexEntry, valueList) <- mappedRows) {
+      val key: String = getSortedMapOfKeysAndValuesNotSpecifiedInTheQuery(tagsAndValues, rowIndexEntry).values.mkString(separator)
       var lines = List[String]()
       if(out.contains(key)) {
         lines = out(key)
       }
-      for (row <- mappedRows(rowIndexEntry)) {
-        val value: AnyRef = function.get(row)
+      for (row <- valueList) {
+        val value = function.get(row)
         if (value != null) {
           lines = lines.:: (value.toString)
         }
@@ -70,25 +71,22 @@ class SimpleTable[T](protected val tableSource: BaseTableSource[T]) {
   }
 
 
-  private def concatinateUnspecifiedRowSpecifierValues(rowSpecifier: RowSpecifier,
-                                                       rowIndexEntry: Map[String, AnyRef],
-                                                       separator: String): String = {
-    var out: String = ""
-    val keySet: collection.Set[String] = rowIndexEntry.keySet
-    var sortedKeyset = new scala.collection.immutable.TreeSet[String]
-    for(key<-keySet){
-      sortedKeyset += key
-    }
-    for (tag <- sortedKeyset) {
-      val indexEntryWithTagRemoved = rowIndexEntry - tag
-      if (rowSpecifier.matches(indexEntryWithTagRemoved)) {
-        if (out.length > 0) {
-          out = out + separator
+  private def getSortedMapOfKeysAndValuesNotSpecifiedInTheQuery(tagsAndValues: Iterable[(String, AnyRef)],
+                                                       rowIndexEntry: Map[String, AnyRef]): SortedMap[String, AnyRef] = {
+    var filteredIndexEntry = scala.collection.SortedMap[String, AnyRef]()
+
+    for((tag, value) <- tagsAndValues){
+      val indexEntryValue = rowIndexEntry.get(tag)
+      if(indexEntryValue == None){
+        println("Warning: index entry should have had tag " + tag + " but it wasn't there...")
+      } else {
+        if(indexEntryValue.get != value){
+          println("Warning: index entry should have had value (" + value + ") for tag " + tag + " but instead it had value (" + indexEntryValue.get + ")...")
         }
-        out = out + rowIndexEntry(tag)
+        filteredIndexEntry = filteredIndexEntry.+((tag, value))
       }
     }
-    out
+    filteredIndexEntry
   }
 
   def getAverageValueForMatchingRows(rowSpecifier: RowSpecifier, function: Function[T, java.lang.Double]): Double = {
