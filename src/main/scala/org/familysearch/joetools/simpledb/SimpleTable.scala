@@ -81,8 +81,8 @@ class SimpleTable[T](protected val tableSource: BaseTableSource[T]) {
       if(!tagsAndValues.contains(tag)  && !tagstoSkip.contains(tag)){
         filteredIndexEntry = filteredIndexEntry.+((tag, value))
       } else {
-        val tagsAndValuesValue = tagsAndValues(tag)
-        if(tagsAndValuesValue != value){
+        val tagsAndValuesValue = tagsAndValues.get(tag)
+        if(tagsAndValuesValue!=None && tagsAndValuesValue.get != value){
           println("Warning: index entry should have had value (" + tagsAndValuesValue + ") for tag " + tag + " but instead it had value (" + value + ")...")
         }
       }
