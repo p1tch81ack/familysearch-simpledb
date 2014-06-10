@@ -49,7 +49,7 @@ class SimpleTable[T](protected val tableSource: BaseTableSource[T]) {
     specifierValues
   }
 
-  def getMappedListOfValuesMatchingSpecifierGroupedByConcatinatedUniqueValues(tagsAndValues: Map[String, AnyRef], tagstoSkip: Set[String], function: Function[T, String], separator: String): Map[String, _ <: List[String]] = {
+  def getMappedListOfValuesMatchingSpecifierGroupedByConcatinatedUniqueValues(tagsAndValues: Map[String, AnyRef], tagstoSkip: scala.collection.Set[String], function: Function[T, String], separator: String): Map[String, _ <: List[String]] = {
     val rowSpecifier = RowSpecifier(tagsAndValues)
     val mappedRows: Map[Map[String, AnyRef], List[T]] = getMapOfMatchingRows(rowSpecifier)
     var out = Map[String, List[String]]()
@@ -73,7 +73,7 @@ class SimpleTable[T](protected val tableSource: BaseTableSource[T]) {
 
   private def getSortedMapOfKeysAndValuesNotSpecifiedInTheQuery(
       tagsAndValues: Map[String, AnyRef],
-      tagstoSkip: Set[String], rowIndexEntry: Map[String, AnyRef]
+      tagstoSkip: scala.collection.Set[String], rowIndexEntry: Map[String, AnyRef]
       ): SortedMap[String, AnyRef] = {
     var filteredIndexEntry = scala.collection.SortedMap[String, AnyRef]()
 
