@@ -49,12 +49,12 @@ class SimpleTable[T](protected val tableSource: BaseTableSource[T]) {
     specifierValues
   }
 
-  def getMappedListOfValuesMatchingSpecifierGroupedByConcatinatedUniqueValues(tagsAndValues: Map[String, AnyRef], function: Function[T, String], separator: String): Map[String, _ <: List[String]] = {
+  def getMappedListOfValuesMatchingSpecifierGroupedByConcatinatedUniqueValues(tagsAndValues: Map[String, AnyRef], tagstoSkip: Set[String], function: Function[T, String], separator: String): Map[String, _ <: List[String]] = {
     val rowSpecifier = RowSpecifier(tagsAndValues)
     val mappedRows: Map[Map[String, AnyRef], List[T]] = getMapOfMatchingRows(rowSpecifier)
     var out = Map[String, List[String]]()
     for ((rowIndexEntry, valueList) <- mappedRows) {
-      val key: String = getSortedMapOfKeysAndValuesNotSpecifiedInTheQuery(tagsAndValues, rowIndexEntry).values.mkString(separator)
+      val key: String = getSortedMapOfKeysAndValuesNotSpecifiedInTheQuery(tagsAndValues, tagstoSkip, rowIndexEntry).values.mkString(separator)
       var lines = List[String]()
       if(out.contains(key)) {
         lines = out(key)
@@ -71,12 +71,14 @@ class SimpleTable[T](protected val tableSource: BaseTableSource[T]) {
   }
 
 
-  private def getSortedMapOfKeysAndValuesNotSpecifiedInTheQuery(tagsAndValues: Map[String, AnyRef],
-                                                       rowIndexEntry: Map[String, AnyRef]): SortedMap[String, AnyRef] = {
+  private def getSortedMapOfKeysAndValuesNotSpecifiedInTheQuery(
+      tagsAndValues: Map[String, AnyRef],
+      tagstoSkip: Set[String], rowIndexEntry: Map[String, AnyRef]
+      ): SortedMap[String, AnyRef] = {
     var filteredIndexEntry = scala.collection.SortedMap[String, AnyRef]()
 
     for((tag, value) <- rowIndexEntry){
-      if(!tagsAndValues.contains(tag)){
+      if(!tagsAndValues.contains(tag)  && !tagstoSkip.contains(tag)){
         filteredIndexEntry = filteredIndexEntry.+((tag, value))
       } else {
         val tagsAndValuesValue = tagsAndValues(tag)
