@@ -1,15 +1,15 @@
 package org.familysearch.joetools.simpledb
 
-import org.familysearch.joetools.simpledb.SimpleTable.BaseTableSource
 import scala.collection.SortedMap
+import scala.collection.JavaConverters._
 
-object SimpleTable {
-  type BaseTableSource[T] =  Iterable[Tuple2[Map[String, AnyRef], T]]
-}
+class SimpleTable[T](baseIterable: Iterable[T], companion: Companion[T]) {
+  protected val tableSource: Iterable[Tuple2[Map[String, AnyRef], T]] = {
+    (for(instance <- baseIterable)
+      yield(companion.toMap(instance)->instance)).toMap
+  }
 
-class SimpleTable[T](protected val tableSource: BaseTableSource[T]) {
-  def this(baseIterable: Iterable[T], companion: Companion[T]) = this(new MappedIterableBaseTableSource[T](baseIterable, companion).toMap)
-  def this(baseIterable: java.lang.Iterable[T], companion: Companion[T]) = this(new MappedJavaIterableBaseTableSource[T](baseIterable, companion).toMap)
+  def this(baseIterable: java.lang.Iterable[T], companion: Companion[T]) = this(baseIterable.asScala, companion)
 
   def getMatchingRows(matchSpecifier: RowSpecifier): List[T] = {
     var matchingRows = List[T]()
