@@ -6,13 +6,23 @@ import scala.reflect.ClassTag
 
 class SimpleTable[T](baseIterable: Iterable[T])(implicit classTag:ClassTag[T] ) {
   private val tableData: Array[T] = baseIterable.toArray[T](classTag)
-  val companion = new Companion[T]
   protected val tableValues: Iterable[Tuple2[scala.collection.immutable.Map[String, AnyRef], Int]] = {
     (for(i <- 0 until tableData.size)
-      yield companion.toMap(tableData(i)) -> i).toMap
+      yield toMap(tableData(i)) -> i).toMap
   }
 
   def this(baseIterable: java.lang.Iterable[T], clazz: Class[T]) = this(baseIterable.asScala)(ClassTag[T](clazz))
+
+  private def toMap(instance: T): Map[String, AnyRef] = {
+    var ret = Map[String, AnyRef]()
+    for(f<- classTag.runtimeClass.getDeclaredFields){
+      f.setAccessible(true)
+      if(!f.getName.contains('$')) {
+        ret = ret.+(f.getName -> f.get(instance))
+      }
+    }
+    ret
+  }
 
   def getMatchingRows(matchSpecifier: RowSpecifier): List[T] = {
     var matchingRows = List[T]()

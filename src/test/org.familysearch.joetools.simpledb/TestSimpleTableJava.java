@@ -27,7 +27,7 @@ class Foo {
     }
 }
 
-public class TestSimpleDBJava extends TestCase{
+public class TestSimpleTableJava extends TestCase{
 
     /*
   case class Foo(a: java.lang.Integer, b: String)
@@ -47,7 +47,7 @@ public class TestSimpleDBJava extends TestCase{
   }
 
  */
-    public void testPacificToEastern() {
+    public void testGetAllRows() {
         Foo foo = new Foo(1, "A");
         List<Foo> fooList = new LinkedList<Foo>();
         fooList.add(foo);
@@ -56,5 +56,6 @@ public class TestSimpleDBJava extends TestCase{
         scala.collection.immutable.List<Foo> matchingRows = fooTable.getMatchingRows(new RowSpecifier());
         assertEquals(1, matchingRows.length());
         assertEquals(foo.getB(), matchingRows.apply(0).getB());
+        assertEquals(foo.getA(), matchingRows.apply(0).getA());
     }
 }
