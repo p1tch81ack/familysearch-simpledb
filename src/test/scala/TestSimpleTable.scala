@@ -19,13 +19,13 @@ class TestSimpleTable {
   @Test
   def testTableCreation() {
     val fooList = List[Foo]()
-    /*val table = */ new SimpleTable[Foo](fooList, Foo)
+    /*val table = */ new SimpleTable[Foo](fooList)
   }
 
   @Test
   def testTableCreationFromJavaCollection() {
     val fooList = new java.util.LinkedList[Foo]()
-    /*val table = */new SimpleTable[Foo](fooList, JavaFooCompanion)
+    /*val table = */new SimpleTable[Foo](fooList, classOf[Foo])
     val foo=Foo(1, "A")
     /*val fooUnapply: Option[_<:Product] =*/ Foo.unapply(foo)
   }

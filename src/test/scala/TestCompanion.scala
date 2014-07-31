@@ -7,7 +7,7 @@ import org.familysearch.joetools.simpledb.Companion
 class TestCompanion {
   case class Foo(a: java.lang.Integer, b: String)
 
-  object Foo extends Companion[Foo]
+  val fooCompanion = new Companion[Foo]
   /*
   @Test def testWillFail() {
     assert(false)
@@ -35,8 +35,8 @@ class TestCompanion {
   @Test
   def testToMap() {
     val foo = Foo(1, "A")
-    val map = Foo.toMap(foo)
-    assert(map("a").equals(new java.lang.Integer(1)))
+    val map = fooCompanion.toMap(foo)
+    assert(map("a").asInstanceOf[java.lang.Integer].equals(new java.lang.Integer(1)))
     assert(map("b")=="A")
     assert(map.keySet.size==2, "map.keySet has " + map.keySet.--(Set("a", "b")) + " which should be empty")
   }

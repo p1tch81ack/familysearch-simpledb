@@ -2,34 +2,37 @@ package org.familysearch.joetools.simpledb
 
 import scala.collection.SortedMap
 import scala.collection.JavaConverters._
+import scala.reflect.ClassTag
 
-class SimpleTable[T](baseIterable: Iterable[T], companion: Companion[T]) {
-  protected val tableSource: Iterable[Tuple2[Map[String, AnyRef], T]] = {
-    (for(instance <- baseIterable)
-      yield(companion.toMap(instance)->instance)).toMap
+class SimpleTable[T](baseIterable: Iterable[T])(implicit classTag:ClassTag[T] ) {
+  private val tableData: Array[T] = baseIterable.toArray[T](classTag)
+  val companion = new Companion[T]
+  protected val tableValues: Iterable[Tuple2[scala.collection.immutable.Map[String, AnyRef], Int]] = {
+    (for(i <- 0 until tableData.size)
+      yield companion.toMap(tableData(i)) -> i).toMap
   }
 
-  def this(baseIterable: java.lang.Iterable[T], companion: Companion[T]) = this(baseIterable.asScala, companion)
+  def this(baseIterable: java.lang.Iterable[T], clazz: Class[T]) = this(baseIterable.asScala)(ClassTag[T](clazz))
 
   def getMatchingRows(matchSpecifier: RowSpecifier): List[T] = {
     var matchingRows = List[T]()
-    for ((rowIndexEntry, instance) <- tableSource) {
+    for ((rowIndexEntry, index) <- tableValues) {
       if (matchSpecifier.matches(rowIndexEntry)) {
-        matchingRows ::= instance
+        matchingRows ::= tableData(index)
       }
     }
     matchingRows
   }
 
-  def getMapOfMatchingRows(matchSpecifier: RowSpecifier): Map[Map[String, AnyRef], List[T]] = {
-    var matchingRowMap = Map[Map[String, AnyRef], List[T]]()
-    for ((rowIndexEntry, instance) <- tableSource) {
+  def getMapOfMatchingRows(matchSpecifier: RowSpecifier): scala.collection.immutable.Map[scala.collection.immutable.Map[String, AnyRef], List[T]] = {
+    var matchingRowMap = scala.collection.immutable.Map[scala.collection.immutable.Map[String, AnyRef], List[T]]()
+    for ((rowIndexEntry, index) <- tableValues) {
       if ((matchSpecifier eq null) || matchSpecifier.matches(rowIndexEntry)) {
         var instanceList = List[T]()
         if(matchingRowMap.contains(rowIndexEntry)){
           instanceList = matchingRowMap(rowIndexEntry)
         }
-        instanceList ::= instance
+        instanceList ::= tableData(index)
         matchingRowMap += (rowIndexEntry->instanceList)
       }
     }
@@ -49,10 +52,10 @@ class SimpleTable[T](baseIterable: Iterable[T], companion: Companion[T]) {
     specifierValues
   }
 
-  def getMappedListOfValuesMatchingSpecifierGroupedByConcatinatedUniqueValues(tagsAndValues: Map[String, AnyRef], tagstoSkip: scala.collection.Set[String], function: Function[T, String], separator: String): Map[String, _ <: List[String]] = {
+  def getMappedListOfValuesMatchingSpecifierGroupedByConcatinatedUniqueValues(tagsAndValues: scala.collection.immutable.Map[String, AnyRef], tagstoSkip: scala.collection.Set[String], function: Function[T, String], separator: String): scala.collection.immutable.Map[String, _ <: List[String]] = {
     val rowSpecifier = RowSpecifier(tagsAndValues)
-    val mappedRows: Map[Map[String, AnyRef], List[T]] = getMapOfMatchingRows(rowSpecifier)
-    var out = Map[String, List[String]]()
+    val mappedRows: scala.collection.immutable.Map[scala.collection.immutable.Map[String, AnyRef], List[T]] = getMapOfMatchingRows(rowSpecifier)
+    var out = scala.collection.immutable.Map[String, List[String]]()
     for ((rowIndexEntry, valueList) <- mappedRows) {
       val key: String = getSortedMapOfKeysAndValuesNotSpecifiedInTheQuery(tagsAndValues, tagstoSkip, rowIndexEntry).values.mkString(separator)
       var lines = List[String]()
@@ -72,8 +75,8 @@ class SimpleTable[T](baseIterable: Iterable[T], companion: Companion[T]) {
 
 
   private def getSortedMapOfKeysAndValuesNotSpecifiedInTheQuery(
-      tagsAndValues: Map[String, AnyRef],
-      tagstoSkip: scala.collection.Set[String], rowIndexEntry: Map[String, AnyRef]
+      tagsAndValues: scala.collection.immutable.Map[String, AnyRef],
+      tagstoSkip: scala.collection.Set[String], rowIndexEntry: scala.collection.immutable.Map[String, AnyRef]
       ): SortedMap[String, AnyRef] = {
     var filteredIndexEntry = scala.collection.SortedMap[String, AnyRef]()
 

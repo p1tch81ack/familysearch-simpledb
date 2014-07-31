@@ -1,13 +1,16 @@
+package org.familysearch.joetools.simpledb;
+
 import junit.framework.TestCase;
-import org.familysearch.joetools.simpledb.Companion;
-import scala.collection.immutable.Map;
+
+import java.util.LinkedList;
+import java.util.List;
 
 
 class Foo {
     private Integer a;
     private String b;
 
-    static Companion<Foo> companion = new Companion<Foo>(Foo.class);
+//    static Companion<Foo> companion = new Companion<Foo>(Foo.class);
 
     public Foo(Integer a, String b){
         this.a = a;
@@ -24,7 +27,7 @@ class Foo {
     }
 }
 
-public class TestCompanionJava extends TestCase{
+public class TestSimpleDBJava extends TestCase{
 
     /*
   case class Foo(a: java.lang.Integer, b: String)
@@ -46,9 +49,12 @@ public class TestCompanionJava extends TestCase{
  */
     public void testPacificToEastern() {
         Foo foo = new Foo(1, "A");
-        Map<String, Object> map = Foo.companion.toMap(foo);
-        assertEquals(foo.getA(), map.apply("a"));
-        assertEquals(foo.getB(), map.apply("b"));
-        assertFalse(map.keySet().size()==2);
+        List<Foo> fooList = new LinkedList<Foo>();
+        fooList.add(foo);
+        SimpleTable<Foo> fooTable = new SimpleTable<Foo>(fooList, Foo.class);
+
+        scala.collection.immutable.List<Foo> matchingRows = fooTable.getMatchingRows(new RowSpecifier());
+        assertEquals(1, matchingRows.length());
+        assertEquals(foo.getB(), matchingRows.apply(0).getB());
     }
 }
