@@ -1,8 +1,40 @@
 package org.familysearch.joetools.simpledb
 
-import scala.collection.SortedMap
+import scala.collection.{mutable, SortedMap}
 import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
+
+private class TagValueIndexes {
+  private val valueIndexes = new mutable.HashMap[AnyRef, mutable.Set[Int]]
+  private val nullIndexes= new mutable.HashSet[Int]
+
+  def addEntry(index: Int, value: AnyRef){
+    var indexSet: mutable.Set[Int] = null
+    if(value eq null){
+      nullIndexes.add(index)
+    } else {
+      if (valueIndexes.contains(value)) {
+        indexSet = valueIndexes(value)
+      } else {
+        indexSet = new mutable.HashSet[Int]()
+        valueIndexes.put(value, indexSet)
+      }
+      indexSet.add(index)
+    }
+  }
+
+  def hasValue(value: AnyRef): Set[Int] = {
+    if(value eq null){
+      nullIndexes.toSet
+    } else {
+      if(valueIndexes.contains(value)){
+        valueIndexes(value).toSet
+      } else {
+        Set[Int]()
+      }
+    }
+  }
+}
 
 class SimpleTable[T](baseIterable: Iterable[T])(implicit classTag:ClassTag[T] ) {
   private val tableData: Array[T] = baseIterable.toArray[T](classTag)
@@ -10,20 +42,51 @@ class SimpleTable[T](baseIterable: Iterable[T])(implicit classTag:ClassTag[T] ) 
     (for(i <- 0 until tableData.size)
       yield toMap(tableData(i)) -> i).toMap
   }
+  private val tagValueMap: mutable.HashMap[String, TagValueIndexes] = {
+    val map = new mutable.HashMap[String, TagValueIndexes]
+    val obviousFieldNames = getObviousFieldNames
+    for(name <- obviousFieldNames){
+      map.put(name, new TagValueIndexes())
+    }
+    for(i <- 0 until tableData.size){
+      val entry = tableData(i)
+      for(name <- obviousFieldNames) {
+        val mapForTag = map(name)
+        val value = getValueOfFieldWithObviousName(entry, name)
+        mapForTag.addEntry(i, value)
+      }
+    }
+    map
+  }
 
   def this(baseIterable: java.lang.Iterable[T], clazz: Class[T]) = this(baseIterable.asScala)(ClassTag[T](clazz))
 
-  private def toMap(instance: T): Map[String, AnyRef] = {
-    var ret = Map[String, AnyRef]()
-    for(f<- classTag.runtimeClass.getDeclaredFields){
-      f.setAccessible(true)
-      if(!f.getName.contains('$')) {
-        ret = ret.+(f.getName -> f.get(instance))
-      }
+  def hasTagValue(tag: String, value: AnyRef): Set[Int] = {
+    if(tagValueMap.contains(tag)){
+      val tagValueIndices = tagValueMap(tag)
+      tagValueIndices.hasValue(value)
+    } else {
+      Set[Int]()
     }
-    ret
   }
 
+  def getIndexSet: Set[Int] = RangeSet(tableData.indices)
+
+  private def getObviousFieldNames: Array[String] = {
+    for(f <- classTag.runtimeClass.getDeclaredFields filter (!_.getName.contains('$'))) yield f.getName
+  }
+
+  private def getValueOfFieldWithObviousName(instance: T, name: String): AnyRef = {
+    val f = classTag.runtimeClass.getDeclaredField(name)
+    f.setAccessible(true)
+    f.get(instance)
+  }
+
+  private def toMap(instance: T): Map[String, AnyRef] = {
+    (for(name <- getObviousFieldNames) yield name -> getValueOfFieldWithObviousName(instance, name)).toMap
+  }
+
+/*
   def getMatchingRows(matchSpecifier: RowSpecifier): List[T] = {
     var matchingRows = List[T]()
     for ((rowIndexEntry, index) <- tableValues) {
@@ -48,6 +111,33 @@ class SimpleTable[T](baseIterable: Iterable[T])(implicit classTag:ClassTag[T] ) 
     }
     matchingRowMap
   }
+*/
+
+  def getMatchingRows(matchSpecifier: RowSpecifier): List[T] = {
+    val matchingIndices = matchSpecifier.matches(this)
+    var matchingRows = List[T]()
+    for (index<-matchingIndices) {
+        matchingRows ::= tableData(index)
+    }
+    matchingRows
+  }
+
+  def getMapOfMatchingRows(matchSpecifier: RowSpecifier): scala.collection.immutable.Map[scala.collection.immutable.Map[String, AnyRef], List[T]] = {
+    val matchingIndices = matchSpecifier.matches(this)
+    var matchingRowMap = scala.collection.immutable.Map[scala.collection.immutable.Map[String, AnyRef], List[T]]()
+    for (index <- matchingIndices) {
+      val rowIndexEntry = toMap(tableData(index))
+        var instanceList = List[T]()
+        if(matchingRowMap.contains(rowIndexEntry)){
+          instanceList = matchingRowMap(rowIndexEntry)
+        }
+        instanceList ::= tableData(index)
+        matchingRowMap += (rowIndexEntry->instanceList)
+    }
+    matchingRowMap
+  }
+
+
 
 
 

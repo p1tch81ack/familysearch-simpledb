@@ -6,28 +6,28 @@ import java.util.LinkedList;
 import java.util.List;
 
 
-class Foo {
-    private Integer a;
-    private String b;
+public class TestSimpleTableJava extends TestCase{
+    class Foo {
+        private Integer a;
+        private String b;
 
 //    static Companion<Foo> companion = new Companion<Foo>(Foo.class);
 
-    public Foo(Integer a, String b){
-        this.a = a;
-        this.b =b;
+        public Foo(Integer a, String b){
+            this.a = a;
+            this.b =b;
+        }
+
+        public Integer getA(){
+            return a;
+        }
+
+        public String getB(){
+            return b;
+
+        }
     }
 
-    public Integer getA(){
-        return a;
-    }
-
-    public String getB(){
-        return b;
-
-    }
-}
-
-public class TestSimpleTableJava extends TestCase{
 
     /*
   case class Foo(a: java.lang.Integer, b: String)

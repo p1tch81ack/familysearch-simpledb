@@ -18,7 +18,8 @@ class RowSpecifier(private val test: Test) {
 
 
   private def this(parent: RowSpecifier, test: Test) {
-    this(new And(parent.test, test))
+    this( if(parent.test eq null) test else new And(parent.test, test)
+    )
   }
 
   private def this(parent: RowSpecifier, tag: String, value: AnyRef) {
@@ -50,7 +51,10 @@ class RowSpecifier(private val test: Test) {
     andNot(new HasTagValue(tag, value))
   }
 
+/*
   def matches(target: Map[String, AnyRef]): Boolean = {
     test.evaluate(target)
   }
+  */
+def matches(table: SimpleTable[_]): Set[Int] = test.evaluate(table)
 }
