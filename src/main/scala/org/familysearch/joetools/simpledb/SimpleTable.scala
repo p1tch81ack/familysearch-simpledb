@@ -141,11 +141,11 @@ class SimpleTable[T](baseIterable: Iterable[T])(implicit classTag:ClassTag[T] ) 
 
 
 
-  def getSpecifierValuesForMatchingRows(rowSpecifier: RowSpecifier, specifierTag: String): Set[AnyRef] = {
-    var specifierValues = Set[AnyRef]()
+  def getSpecifierValuesForMatchingRows[T](rowSpecifier: RowSpecifier, specifierTag: String): Set[T] = {
+    var specifierValues = Set[T]()
     for (rowIndexEntry <- getMapOfMatchingRows(rowSpecifier).keySet) {
       if(rowIndexEntry.contains(specifierTag)){
-        val specifierValue = rowIndexEntry(specifierTag)
+        val specifierValue = rowIndexEntry(specifierTag).asInstanceOf[T]
         specifierValues += specifierValue
       }
     }
