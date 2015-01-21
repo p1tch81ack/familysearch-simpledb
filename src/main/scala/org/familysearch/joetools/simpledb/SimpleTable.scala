@@ -34,6 +34,11 @@ private class TagValueIndexes {
       }
     }
   }
+
+  def values: Set[AnyRef] = {
+    val ret: Set[AnyRef] = valueIndexes.keySet.toSet
+    ret
+  }
 }
 
 class SimpleTable[T](baseIterable: Iterable[T])(implicit classTag:ClassTag[T] ) {
@@ -139,13 +144,16 @@ class SimpleTable[T](baseIterable: Iterable[T])(implicit classTag:ClassTag[T] ) 
 
 
 
+  def getSpecifierValues(specifierTag: String): Set[AnyRef] = {
+    val tableEntryForTag: TagValueIndexes = tagValueMap(specifierTag)
+    tableEntryForTag.values
+  }
 
-
-  def getSpecifierValuesForMatchingRows[T](rowSpecifier: RowSpecifier, specifierTag: String): Set[T] = {
-    var specifierValues = Set[T]()
+  def getSpecifierValuesForMatchingRows(rowSpecifier: RowSpecifier, specifierTag: String): Set[AnyRef] = {
+    var specifierValues = Set[AnyRef]()
     for (rowIndexEntry <- getMapOfMatchingRows(rowSpecifier).keySet) {
       if(rowIndexEntry.contains(specifierTag)){
-        val specifierValue = rowIndexEntry(specifierTag).asInstanceOf[T]
+        val specifierValue = rowIndexEntry(specifierTag)
         specifierValues += specifierValue
       }
     }
