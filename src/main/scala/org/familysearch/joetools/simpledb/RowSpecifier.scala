@@ -56,5 +56,5 @@ class RowSpecifier(private val test: Test) {
     test.evaluate(target)
   }
   */
-def matches(table: SimpleTable[_]): Set[Int] = test.evaluate(table)
+def matches(index: UnorderedIndex[_]): Set[Int] = test.evaluate(index)
 }
