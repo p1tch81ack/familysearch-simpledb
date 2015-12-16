@@ -14,6 +14,8 @@ class SimpleTable[T](baseIterable: Iterable[T], fieldMapper:FieldMapper[T])(impl
   def getMapOfMatchingRows(matchSpecifier: RowSpecifier): scala.collection.immutable.Map[scala.collection.immutable.Map[String, AnyRef], List[T]] = mainIndex.getMapOfMatchingRows(matchSpecifier)
 
   def getMatchingRows(matchSpecifier: RowSpecifier): List[T] = mainIndex.getMatchingRows(matchSpecifier)
+
+  def getFieldNames() = fieldMapper.names
 }
 
 
