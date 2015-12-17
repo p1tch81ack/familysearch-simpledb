@@ -71,7 +71,11 @@ abstract class Table[T] {
 
   def getAllRows = getMatchingRows(new RowSpecifier())
 
+  def getSpecifierValuesForMatchingRows(matchSpecifier: RowSpecifier, fieldName: String): Set[AnyRef] = {
+    getMatchingRows(matchSpecifier).map(fieldMapper.map(_)(fieldName)).toSet
+  }
+
   def getSpecifierValues(fieldName: String): Set[AnyRef] = {
-    getAllRows.map(fieldMapper.map(_)(fieldName)).toSet
+    getSpecifierValuesForMatchingRows(new RowSpecifier(), fieldName)
   }
 }
