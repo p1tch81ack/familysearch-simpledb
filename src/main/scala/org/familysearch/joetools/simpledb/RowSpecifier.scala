@@ -3,7 +3,7 @@ package org.familysearch.joetools.simpledb
 object RowSpecifier {
   def apply(tagsAndValues: Map[String, AnyRef]): RowSpecifier = {
     var rowSpecifier = new RowSpecifier
-    for(tag <- tagsAndValues.keySet){
+    for (tag <- tagsAndValues.keySet) {
       rowSpecifier = rowSpecifier.`with`(tag, tagsAndValues(tag))
     }
     rowSpecifier
@@ -18,7 +18,7 @@ class RowSpecifier(private val test: Test) {
 
 
   private def this(parent: RowSpecifier, test: Test) {
-    this( if(parent.test eq null) test else new And(parent.test, test)
+    this(if (parent.test eq null) test else new And(parent.test, test)
     )
   }
 
@@ -51,10 +51,5 @@ class RowSpecifier(private val test: Test) {
     andNot(new HasTagValue(tag, value))
   }
 
-/*
-  def matches(target: Map[String, AnyRef]): Boolean = {
-    test.evaluate(target)
-  }
-  */
-def matches(index: UnorderedIndex[_]): Set[Int] = test.evaluate(index)
+  def matches(index: UnorderedIndex[_]): Set[Int] = test.evaluate(index)
 }

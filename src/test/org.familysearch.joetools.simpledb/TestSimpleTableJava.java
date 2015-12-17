@@ -4,7 +4,6 @@ import junit.framework.TestCase;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
 public class TestSimpleTableJava extends TestCase {
   class Foo {
@@ -31,7 +30,7 @@ public class TestSimpleTableJava extends TestCase {
   }
 
   private void assertFieldNames(SimpleTable<Foo> fooSimpleTable) {
-    scala.collection.immutable.Set<String> fieldNames = fooSimpleTable.getFieldNames();
+    scala.collection.immutable.Set<String> fieldNames = fooSimpleTable.fieldNames();
     assertTrue(fieldNames.contains("a"));
     assertTrue(fieldNames.contains("b"));
     assertTrue(fieldNames.size() == 2);
